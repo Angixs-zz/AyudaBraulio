@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07131f" />
+  <meta name="description" content="Simulador interactivo de configuración VLAN para switch Cisco 2960." />
+  <title>Simulador Cisco 2960 · VLAN</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <noscript>Esta aplicación necesita JavaScript para funcionar.</noscript>
+
+  <header class="topbar">
+    <div>
+      <a href="../#simulador" style="color:var(--accent-2);font-size:.85rem;display:inline-block;margin-bottom:8px">← Volver a Braulio · Network Lab</a>
+      <p class="eyebrow">Práctica de conmutación</p>
+      <h1>Simulador Cisco 2960</h1>
+    </div>
+    <div class="topbar-actions">
+      <button id="installBtn" class="btn ghost" hidden>Instalar</button>
+      <button id="newScenarioBtn" class="btn primary">Nuevo ejercicio</button>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <aside class="study-panel" aria-label="Datos del ejercicio">
+      <section class="card scenario-card">
+        <p class="muted">Escenario del examen Cisco: VLAN 110–121 y administración VLAN 1. Es distinto al campus de verano (101–110 y administración 100). IPs públicas conservadas para esta simulación aislada.</p>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Escenario</p>
+            <h2 id="scenarioTitle">INDUSTRIAL</h2>
+          </div>
+          <span id="modeBadge" class="badge">GUIADO</span>
+        </div>
+
+        <div class="control-grid">
+          <label>
+            Departamento
+            <select id="departmentSelect"></select>
+          </label>
+          <label>
+            Modo
+            <select id="practiceModeSelect">
+              <option value="guided">Guiado</option>
+              <option value="exam">Examen</option>
+              <option value="free">Libre</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="scenario-facts">
+          <div>
+            <span>IP del switch</span>
+            <strong id="managementIp">200.1.2.9/24</strong>
+          </div>
+          <div>
+            <span>Puerto troncal</span>
+            <strong>Gi0/1</strong>
+          </div>
+        </div>
+
+        <details open>
+          <summary>Enunciado del examen</summary>
+          <div class="exam-copy">
+            <p>CON LA INFORMACIÓN BRINDADA, CREAR LAS VLAN CORRESPONDIENTES EN EL SWITCH DEL DEPARTAMENTO INDICADO.</p>
+            <p>CONFIGURAR LAS VLAN DE CCTV, VOZ, NATIVA, INALÁMBRICA Y DEPARTAMENTO CORRESPONDIENTE.</p>
+            <p>CONFIGURAR IP EN LA VLAN NATIVA DEL SWITCH, CONFIGURACIÓN BÁSICA Y NOMBRE DEL SWITCH CORRESPONDIENTE.</p>
+            <p>CONFIGURAR LOS PUERTOS 1-16 PARA DEPARTAMENTO, 17-20 INALÁMBRICO, 21-22 VOIP, 23 CCTV Y 24 NATIVA.</p>
+          </div>
+        </details>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>VLAN</th><th>Nombre</th><th>Segmento</th></tr>
+            </thead>
+            <tbody id="vlanTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card objective-card">
+        <div class="section-heading compact">
+          <div>
+            <p class="eyebrow">Objetivo actual</p>
+            <h2 id="currentObjective">Entrar al modo privilegiado</h2>
+          </div>
+          <span id="progressPercent" class="score-pill">0%</span>
+        </div>
+        <p id="objectiveHelp" class="muted">Escribe el comando que cambia de Switch&gt; a Switch#.</p>
+        <div class="progress-track" aria-hidden="true"><span id="progressBar"></span></div>
+        <ul id="checklist" class="checklist"></ul>
+      </section>
+
+      <section class="card compact-card">
+        <div class="button-grid">
+          <button id="hintBtn" class="btn secondary">Pista</button>
+          <button id="evaluateBtn" class="btn secondary">Evaluar</button>
+          <button id="showConfigBtn" class="btn secondary">Ver running-config</button>
+          <button id="cleanupPracticeBtn" class="btn secondary">Practicar limpieza</button>
+        </div>
+      </section>
+    </aside>
+
+    <section class="terminal-panel" aria-label="Consola simulada">
+      <div class="terminal-window">
+        <div class="terminal-titlebar">
+          <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div>
+            <strong>PuTTY · Cisco IOS simulado</strong>
+            <span id="connectionStatus">Conectado por consola</span>
+          </div>
+          <button id="clearTerminalBtn" class="icon-btn" title="Limpiar pantalla" aria-label="Limpiar pantalla">⌫</button>
+        </div>
+
+        <div id="terminalOutput" class="terminal-output" role="log" aria-live="polite"></div>
+
+        <form id="terminalForm" class="terminal-input-row" autocomplete="off">
+          <label id="promptLabel" for="commandInput">Switch&gt;</label>
+          <input
+            id="commandInput"
+            name="command"
+            type="text"
+            inputmode="text"
+            autocapitalize="none"
+            autocorrect="off"
+            spellcheck="false"
+            aria-label="Escribe un comando de Cisco IOS"
+            autofocus
+          />
+          <button class="send-btn" type="submit" aria-label="Enviar comando">↵</button>
+        </form>
+      </div>
+
+      <div id="feedbackCard" class="feedback-card info" aria-live="polite">
+        <strong>Listo para practicar.</strong>
+        <span>Escribe comandos como si estuvieras frente al switch.</span>
+      </div>
+
+      <section class="mobile-shortcuts" aria-label="Comandos rápidos">
+        <button data-command="enable">enable</button>
+        <button data-command="configure terminal">conf t</button>
+        <button data-command="exit">exit</button>
+        <button data-command="end">end</button>
+        <button data-command="show vlan brief">show vlan brief</button>
+        <button data-command="write memory">wr</button>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="resultDialog" class="result-dialog">
+    <form method="dialog">
+      <div class="result-header">
+        <div>
+          <p class="eyebrow">Resultado</p>
+          <h2 id="resultTitle">Evaluación</h2>
+        </div>
+        <button class="icon-btn" value="close" aria-label="Cerrar">×</button>
+      </div>
+      <div id="resultScore" class="big-score">0%</div>
+      <p id="resultSummary" class="muted"></p>
+      <div id="resultBreakdown" class="result-breakdown"></div>
+      <div class="dialog-actions">
+        <button id="retryBtn" class="btn secondary" value="close">Reintentar</button>
+        <button id="nextScenarioBtn" class="btn primary" value="close">Otro ejercicio</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>

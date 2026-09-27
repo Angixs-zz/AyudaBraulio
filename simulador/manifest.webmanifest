@@ -1,0 +1,11 @@
+{
+  "name": "Simulador Cisco 2960 · VLAN",
+  "short_name": "Cisco VLAN",
+  "description": "Simulador de examen para practicar configuración de VLAN, puertos access, trunk, administración y limpieza de un switch Cisco 2960.",
+  "lang": "es-MX",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#07131f",
+  "theme_color": "#07131f"
+}
